@@ -1,0 +1,68 @@
+<?xml version="1.0"?>
+
+<!-- Works with Ant 1.7.0 and higher -->
+<project basedir=".">
+
+	<property file="regular_build.properties"/>
+
+	<condition property="code.analysis.enabled.internal" value="true">
+		<istrue value="${code.analysis.enabled}"/>
+	</condition>
+
+	<target name="generate_code_analysis_reports">
+		<if>
+			<not>
+				<equals arg1="${code.analysis.enabled.internal}" arg2="true" />
+			</not>
+			<then>
+				<echo level="info" message="Code Analysis Reporting disabled" />
+			</then>
+			<else>
+				<script language="javascript"><![CDATA[
+					var list = project.getProperty('code.analysis.exclude.list');
+					var excludeRegexString = '\\\\bmedias\\\\b';
+					if (list) {
+						excludeRegexString += '|\\\\b' + list.replace(/\s*,\s*/g, '\\\\b|\\\\b') + '\\\\b';
+					}
+			    	project.setProperty('code.analysis.exclude.regex', excludeRegexString);
+					
+					var inputDir = project.getProperty('code.analysis.input.dir');
+					if (!inputDir) {
+				    	project.setProperty('code.analysis.input.dir', project.getProperty('solution_under_testing'));					
+					}
+				]]></script>
+				<echo level="verbose" message="plato exclude regex=${code.analysis.exclude.regex}" />
+
+				<antcall target="execute_plato_for_code_analysis" />
+			</else>
+		</if>
+	</target>
+
+	<!-- create a code analysis report using plato-->
+	<target name="execute_plato_for_code_analysis">
+		<echo level="info" message="code analysis of ${code.analysis.input.dir} into output dir ${code.analysis.output.dir}"/>
+
+		<condition property="code.analysis.internal.linter-option" value="--jshint" else="--eslint">
+		    <equals arg1="${code.analysis.linter}" arg2="jshint" />
+		</condition>
+		<condition property="code.analysis.internal.linter-option.value" value="${code.analysis.settings.jshint}" else="${code.analysis.settings.eslint}">
+		    <equals arg1="${code.analysis.linter}" arg2="jshint" />
+		</condition>
+			
+		<exec dir="${WORKSPACE}" executable="plato.cmd" failonerror="${code.analysis.failOnError}">
+			<arg value="--recurse"/>
+
+			<arg value="--dir"/>
+			<arg value="${code.analysis.output.dir}"/>
+			
+			<arg value="--exclude"/>
+			<arg value='"${code.analysis.exclude.regex}"'/>
+
+			<arg value="${code.analysis.internal.linter-option}"/>
+			<arg value='${code.analysis.internal.linter-option.value}'/>
+			
+			<arg value="${code.analysis.input.dir}"/>
+		</exec>
+	</target>
+
+</project>

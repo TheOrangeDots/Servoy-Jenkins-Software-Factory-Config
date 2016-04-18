@@ -1,0 +1,133 @@
+<?xml version="1.0"?>
+
+<!-- Works with Ant 1.7.0 and higher -->
+<project basedir=".">
+	<!-- 
+	The main target is prepare_codebase_for_code_coverage_reporting. This target invokes Istanbul to instrument all the code in the workspace to a temporary directory.
+	Next, the servoy_parse_instrumented_workspace target is invoked to 'fix' the instrumented code so it becomes valid .js files for Servoy again (mainly adding a missing JSDoc block at the top of the file).
+	The servoy_parse_instrumented_workspace target writes the updated .js files to a new directory. 
+	Which files and folders the servoy_parse_instrumented_workspace target processes and copies to the new directory can be controller by the ${instrument.exclude.modules} and ${instrument.include.modules} params
+	-->
+
+	<property file="regular_build.properties"/>
+
+	<condition property="code.coverage.enabled.internal" value="true">
+		<istrue value="${code.coverage.enabled}"/>
+	</condition>
+
+	<!-- 
+		Main target for preparing the codebase for Code Coverage reporting by instrumenting the codebase, by the following steps:
+		1: copies the ${WORKSPACE} into ${code.coverage.instrumented_workspace}
+		2: runs Istanbul over ${WORKSPACE}, outputting the instrumented files into ${code.coverage.instrumented_workspace.tmp}
+		3: runs ServoyParser that copies all matching files (based on include and exclude options) from ${code.coverage.instrumented_workspace.tmp} to ${code.coverage.instrumented_workspace}
+		   The ServoyParser also:
+		   - fixes the files instrumented by Istanbul to make them valis Servoy .js files (adding a JSDoc block)
+		   - builds a custom scope with logic to force the Code Coverage Report to include also .js files not touched at all while running the UnitTests
+		
+		The reason step 2 uses a tmp dir from which step 3 copies over stuff is that Istanbul doesn't offer options to exclude certain files, like .js files in the media library of Servoy (which should not be instrumented
+		
+		Steps not yet implemented (waiting for SVY-6744 Add solutionModel.getObjectByUUID(UUID):
+		- Hook up the writing of the collected coverage information into the onClose solution of the test solution
+		- Hook up the scope to force all .js files to be included in the Code Coverage Report to the onOpen event of the test solution
+		
+		These things should now be done manually in the test solution.
+	-->
+	<target name="code_coverage_reporting_preparation">
+		<if>
+			<not>
+				<equals arg1="${code.coverage.enabled.internal}" arg2="true" />
+			</not>
+			<then>
+				<echo level="info" message="Code Coverage Reporting disabled" />
+			</then>
+			<else>
+				<delete dir="${code.coverage.instrumented_workspace.tmp}" />
+				<mkdir dir="${code.coverage.instrumented_workspace.tmp}" />
+				<mkdir dir="${code.coverage.output.dir}" />
+
+				<delete dir="${code.coverage.instrumented_workspace}" />
+				<copy todir="${code.coverage.instrumented_workspace}">
+					<fileset dir="${WORKSPACE}" />
+				</copy>
+
+				<copy todir="${code.coverage.instrumented_workspace}\${workspace_to_solution_dir_path_fragment}${test.solution}">
+					<fileset dir="${lib.dir}">
+						<include name="scopes.codeCoverageReporting.js" />
+					</fileset>
+					<globmapper from="scopes.codeCoverageReporting.js" to="codeCoverageReporting.js"/>
+				</copy>
+
+				<antcall target="code_coverage_instrument_workspace" />
+				<antcall target="code_coverage_fix_instrumented_workspace_for_servoy" />
+				
+				<!--<delete dir="${code.coverage.instrumented_workspace.tmp}"/>-->
+			</else>
+		</if>
+	</target>
+
+	<!-- instrument code from ${solution_under_testing} into the matching directory in ${code.coverage.instrumented_workspace.tmp}-->
+	<target name="code_coverage_instrument_workspace">
+		<echo level="info" message="instrumenting ${workspace_to_solution_dir_path_fragment}${solution_under_testing} into ${code.coverage.instrumented_workspace.tmp}"/>
+		<exec executable="istanbul.cmd" failonerror="${code.coverage.failOnError}">
+			<arg value="instrument"/>
+			<arg value="${WORKSPACE}\${workspace_to_solution_dir_path_fragment}${solution_under_testing}"/>
+			<arg value="--output"/>
+			<arg value="${code.coverage.instrumented_workspace.tmp}\${workspace_to_solution_dir_path_fragment}${solution_under_testing}"/>
+			<arg value="--preserve-comments"/>
+			<arg value="--no-compact"/>
+			<arg value="--save-baseline"/>
+			<arg value="--baseline-file"/>
+			<arg value="${code.coverage.output.dir}/coverage-baseline.json"/>						
+		</exec>
+	</target>
+
+	<!-- Read instrumented code from ${code.coverage.instrumented_workspace.tmp}, fix it and write to ${code.coverage.instrumented_workspace}-->
+	<target name="code_coverage_fix_instrumented_workspace_for_servoy">
+		<echo level="info" message="Processing instrumented code from ${code.coverage.instrumented_workspace.tmp} to ${code.coverage.instrumented_workspace}, fixing Servoy incompatibilities"/>
+		<exec executable="node" failonerror="${code.coverage.failOnError}">
+			<arg value="servoyCodeCoverageInstrumentationFixer.js"/>
+			<arg value="--d"/>
+			<arg value="${code.coverage.instrumented_workspace}"/>
+			<arg value="${code.coverage.instrumented_workspace.tmp}"/>
+			<arg value="--tsp"/>
+			<arg value="${code.coverage.instrumented_workspace}\${workspace_to_solution_dir_path_fragment}${test.solution}"/>
+			<arg value="--rp"/>
+			<arg value="${code.coverage.output.dir}"/>
+			<arg value="--i"/>
+			<arg value="${instrument.include}"/>
+			<arg value="--x"/>
+			<arg value="${instrument.exclude}"/>
+			<arg value="--e"/>
+			<arg value="${code.coverage.failOnError}"/>
+			<arg value="--v"/>
+			<arg value="false"/>
+		</exec>
+	</target>
+
+	<!-- Generate Code Coverage reports after the tests have run -->
+	<target name="generate_code_coverage_reports" unless="test.failed">
+		<if>
+			<not>
+				<equals arg1="${code.coverage.enabled.internal}" arg2="true" />
+			</not>
+			<then>
+				<echo level="info" message="Code Coverage Reporting disabled" />
+			</then>
+			<else>
+				<for list="${code.coverage.report-formats}" param="format">
+		          <sequential>
+		            <echo level="info" message="Generating @{format} report"/>
+		          	<exec executable="istanbul.cmd" failonerror="${code.coverage.failOnError}">
+  						<arg value="report" />
+  						<arg value="--root" />
+  						<arg value="${code.coverage.output.dir}" />
+  						<arg value="--dir" />
+  						<arg value="${code.coverage.output.dir}" />
+		          		<arg value="@{format}" />
+  					</exec>
+		          </sequential>
+		        </for>
+			</else>
+		</if>
+	</target>
+</project>

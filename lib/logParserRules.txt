@@ -1,0 +1,14 @@
+#-----------------------------------------------------------------------------------
+# Config for the Jenkins Log Parser plugin------------------------------------------
+# https://wiki.jenkins-ci.org/display/JENKINS/Log+Parser+Plugin---------------------
+#-----------------------------------------------------------------------------------
+
+#finds ERROR level og entries
+!Filters out CSS parsing errors: these can be raised due to incompatibilities of the CSS parser used in the SC where the tests run, but might work perfectly fine in the Web Client
+error /^\s*\[(java|junit)\].* ERROR \[(?!.*Error at css parsing.*).*/
+
+# list of warnings here...
+warning /^\s*\[(java|junit)\].* WARN \[.*/
+
+# create a quick access link to lines in the report containing 'INFO'
+/^\s*\[(java|junit)\].* INFO \[.*/
