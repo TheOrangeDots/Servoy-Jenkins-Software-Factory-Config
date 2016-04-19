@@ -35,7 +35,10 @@
 			var testSolution = project.getProperty('test.solution');
 			var solutionUnderTesting = project.getProperty('solution_under_testing');
 			
-			if (!solutionUnderTesting) {
+			if (!testSolution) { //if 'test.solution' is not set, default to env.JOB_NAME + '_test'
+				testSolution = project.getProperty('env.JOB_NAME') + '_test'
+			}
+			if (!solutionUnderTesting) { //if 'solution_under_testing' is not set, derive it from the 'test.solution'
 				if (testSolution.endsWith('_test')) {
 					project.setProperty('solution_under_testing', testSolution.slice(0,-5));
 				} else {
