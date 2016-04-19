@@ -39,7 +39,7 @@
 				testSolution = project.getProperty('env.JOB_NAME') + '_test'
 			}
 			if (!solutionUnderTesting) { //if 'solution_under_testing' is not set, derive it from the 'test.solution'
-				if (testSolution.endsWith('_test')) {
+				if (testSolution.slice(-5) === '_test') {
 					project.setProperty('solution_under_testing', testSolution.slice(0,-5));
 				} else {
 					project.setProperty('solution_under_testing', testSolution);
