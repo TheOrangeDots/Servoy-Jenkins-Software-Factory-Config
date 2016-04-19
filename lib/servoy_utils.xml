@@ -190,7 +190,7 @@
             	<arg value="-pl" />
                 <arg value="@{production}" /> <!-- can be "" for test-client export -->
                 <arg value="-server_url" />
-                <arg value="${work.servoy.install.url}" />
+                <arg value="${servoy.install.url}" />
             </java>
             <condition property="export.failed">
                 <not>
