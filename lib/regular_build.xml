@@ -22,7 +22,7 @@
     <!--   - if exports didn't fail, runs smart client tests   -->
     <!--   - fails the build if any tests or exports failed.   -->
     
-    <target name="main" depends="setup, code_coverage_reporting_preparation, export_smart_client_solutions, run_smart_client_tests, collect_artifacts"/>
+    <target name="main" depends="setup, code_coverage_reporting_preparation, export_smart_client_solutions, run_smart_client_tests, collect_logs, finish"/>
 
 	<target name="setup">
 		<if>
@@ -50,6 +50,7 @@
 				}
 			}
 		]]></script>
+		
 	</target>
 	
     <target name="export_smart_client_solutions" depends="get_equinox_jar">
@@ -83,13 +84,13 @@
         </move>
     </target>   
 	
-    <target name="collect_artifacts">
-        <!-- prepare artifacts for Jenkins -->
-        <move file="servoy_log.txt" tofile="${junit.result.dir}/workspace_exporter_app_server_log.txt" failonerror="false"/>
-        <move file="${workspace.internal}/.metadata/.log" tofile="${junit.result.dir}/workspace_exporter_workspace_log.txt" failonerror="false"/>
-        <move file="${servoy.app_server.dir}/servoy_log.txt" tofile="${junit.result.dir}/smart_import_test_client_log.txt" failonerror="false"/>
-
-        <fail message="Exports failed: please check exporter log files." if="export.failed" />
-        <fail message="Tests failed: please check test reports." if="test.failed" />
+    <target name="collect_logs">
+    	<!-- Move workspace log to  -->
+        <move file="${workspace.internal}/.metadata/.log" tofile="${build.dir}/logs/workspace.log" failonerror="false"/>
     </target>
+	
+	<target name="finish">
+		<fail message="Exports failed: please check exporter log files." if="export.failed" />
+		<fail message="Tests failed: please check test reports." if="test.failed" />
+	</target>
 </project>

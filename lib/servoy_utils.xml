@@ -15,6 +15,7 @@
     	<sequential>
             <echo level="info" message="*** Preparing build directory for export ***"/>
         	<make-clean-dir dir="${test.exports.regular.dir}" />
+        	<make-clean-dir dir="${build.dir}/logs"/>
         	<delete failonerror="false" file="@{workspace}/.metadata/.log" />
         	
         	<!-- now we are ready to start the workspace exporter -->
@@ -30,7 +31,8 @@
                 <jvmarg value="${servoy.exporter.memory.xmx}" />
                 <jvmarg value="${servoy.exporter.memory.maxpermsize}" />
                 <jvmarg value="-Dosgi.configuration.cascaded=false" />
-
+                <jvmarg value="-Dtest.log.location=${build.dir}/logs/export.log" />
+                
                 <arg value="-application" />
                 <arg value="com.servoy.eclipse.exporter.solution.application" />
 
@@ -75,9 +77,6 @@
 			<make-clean-dir dir="${passed.exports.dir}"/>
 			<make-clean-dir dir="${passed.exports.regular.dir}"/>
 			
-			<delete failonerror="false" file="${build.dir}/servoy_log.txt" />
-			<delete failonerror="false" file="${servoy.app_server.dir}/servoy_log.txt" />
-			
 			<delete includeemptydirs="true" quiet="true">
 	            <fileset dir="${build.dir}" includes="junit*.properties" />
 	        </delete>
@@ -102,6 +101,7 @@
             	<jvmarg value="${servoy.tester.memory.xms}" />
             	<jvmarg value="${servoy.tester.memory.xmx}" />
             	<jvmarg value="${servoy.tester.memory.maxpermsize}" />
+            	<jvmarg value="-Dtest.log.location=${build.dir}/logs/test.log" />
                 <classpath refid="classpath.run_test" />
 
                 <sysproperty key="servoy.test.target-exports" value="${test.exports.regular.dir}" />
@@ -139,123 +139,6 @@
 
             <!-- don't fail directly here so that test artifacts can be prepared for Jenkins before failing - and also allow any mobile tests to run -->
            </sequential>
-    </macrodef>
-	
-    <macrodef name="export-mobile-solution">
-        <attribute name="solutionNames"/>
-    	<attribute name="workspace"/>
-    	<attribute name="failOnError" default="false"/>
-        <attribute name="outputDir" default="${mobile.test.war.dir}"/>
-        <attribute name="production" default=""/>
-        <sequential>
-        	<echo level="info" message="*** Preparing build directory for export ***"/>
-        	<make-clean-dir dir="${test.exports.mobile.dir}" />
-        	        	
-        	
-        	<!-- store path to newest Eclipse launcher JAR in path id 'newest.equinox.launcher.path.id' -->
-            <!-- and turn the path into a property -->
-            <latest_jar pathName="equinox.launcher.jar.location" dir="${servoy.developer.dir}/plugins" includes="**/org.eclipse.equinox.launcher_*.jar"/>
-
-            <!-- now we are ready to start the workspace exporter -->
-            <echo level="info" message="Using equinox launcher jar: ${equinox.launcher.jar.location_property}" />
-
-            <java   classname="org.eclipse.equinox.launcher.Main"
-                    classpathref="equinox.launcher.jar.location"
-                    failonerror="@{failOnError}"
-                    resultproperty="export.result"
-                    fork="true">
-                <jvmarg value="${servoy.exporter.memory.xms}" />
-                <jvmarg value="${servoy.exporter.memory.xmx}" />
-                <jvmarg value="${servoy.exporter.memory.maxpermsize}" />
-                <jvmarg value="-Dosgi.configuration.cascaded=false" />
-
-                <arg value="-application" />
-                <arg value="com.servoy.eclipse.exporter.mobile.application" />
-
-                <arg value="-data" />
-                <arg value="@{workspace}" />
-                <arg value="-s" />
-                <arg value="@{solutionNames}" />
-                <arg value="-o" />
-                <arg value="@{outputDir}" />
-                <arg value="-as" />
-                <arg value="${servoy.app_server.dir}" />
-                <arg value="-p" />
-                <arg value="${servoy.test.property.file}" />
-
-                <!-- add here any of the optional arguments supported by the exporter; see 'mobile_export -help' for more info; for example: -->
-                <!--arg value="-help" /-->
-                <arg value="-verbose" />
-            	<arg value="-sw" />
-            	<arg value="-pl" />
-                <arg value="@{production}" /> <!-- can be "" for test-client export -->
-                <arg value="-server_url" />
-                <arg value="${servoy.install.url}" />
-            </java>
-            <condition property="export.failed">
-                <not>
-                    <equals arg1="${export.result}" arg2="0"/>
-                </not>
-            </condition>
-        </sequential>
-    </macrodef>
-
-    <macrodef name="run-mobile-client-tests">
-        <attribute name="solutionName"/>
-        <attribute name="driverType"/>
-        <sequential>
-            <echo level="verbose">
-                *** Servoy Solution JS unit mobile client tests ***
-            </echo>
-            
-        	<make-clean-dir dir="${junit.result.dir}" />
-        				        	
-			<make-clean-dir dir="${passed.exports.dir}"/>
-			<make-clean-dir dir="${mobile.test.war.dir}"/>
-        	<make-clean-dir dir="${mobile.deploy.s.dir}"/>
-        	<make-clean-dir dir="${mobile.deploy.w.dir}"/>
-			
-			<delete failonerror="false" file="@{workspace}/.metadata/.log" />
-			<delete failonerror="false" file="${build.dir}/servoy_log.txt" />
-			<delete failonerror="false" file="${servoy.app_server.dir}/servoy_log.txt" />
-			
-			<delete includeemptydirs="true" quiet="true">
-	            <fileset dir="${build.dir}" includes="junit*.properties" />
-	        </delete>
-        				
-        	<path id="classpath.run_mobile_test">
-                <path refid="classpath.run_test"/>
-                <fileset file="${selenium.server.jar}"/>
-            </path>
-
-            <!-- Define a timeout so we know the test will finish eventually -->
-            <junit fork="yes" forkmode="once" timeout="${test.timeout}" dir="${servoy.app_server.dir}" haltonfailure="false" haltonerror="false" showoutput="true" errorProperty="test.failed" failureProperty="test.failed" printsummary="on">
-            	<jvmarg value="${servoy.tester.memory.xms}" />
-            	<jvmarg value="${servoy.tester.memory.xmx}" />
-            	<jvmarg value="${servoy.tester.memory.maxpermsize}" />
-                <classpath refid="classpath.run_mobile_test" />
-
-                <sysproperty key="servoy.test.target" value="${mobile.test.war.dir}/@{solutionName}_TEST.war" />
-                <sysproperty key="servoy.test.property-file" value="${servoy.test.property.file}" />
-                <sysproperty key="servoy.test.targetServiceSolution" value="${mobile.service.export.dir}/@{solutionName}_service.servoy" />
-                <sysproperty key="servoy.test.seleniumDriver" value="@{driverType}" />
-                <sysproperty key="webdriver.chrome.driver" value="${webdriver.chrome.driver}"/>
-
-                <formatter type="brief" usefile="false" />
-                <formatter type="xml" extension=".xm1"/>
-
-                <!-- formatter similar to type="xml" but it shows test suite hierarchy nicely, in a tree-like result xml - useful to nicely show the place where a test failed (solution/form...)
-                but this formatter is not included in ant yet - you would need to patch it yourself and integrate in ant lib from https://issues.apache.org/bugzilla/show_bug.cgi?id=48529
-                if you plan on using it, either comment out the simple "xml" formatter or add "extension" attribute to one of them so they don't get into conflicts when generating xmls -->
-                <formatter type="xml.suites"/>
-
-                <test name="com.servoy.automation.jsunit.mobile.ServoyMobileJSUnitTestRunner" todir="${junit.result.dir}" />
-            </junit>
-
-            <antcall target="create_test_report"/>
-
-            <!-- don't fail directly here so that test artifacts can be prepared for Jenkins before failing - and also allow any mobile tests to run -->
-        </sequential>
     </macrodef>
             
     <target name="create_test_report">
