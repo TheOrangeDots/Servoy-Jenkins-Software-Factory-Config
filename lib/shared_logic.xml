@@ -28,15 +28,21 @@
 	</condition>	
 	
 	<condition property="servoy.developer.dir" value="${servoy.install.dir}/developer">
-		<isset property="servoy.developer.dir"/>
+		<not>
+			<isset property="servoy.developer.dir"/>
+		</not>
 	</condition>	
 	
 	<condition property="servoy.app_server.dir" value="${servoy.install.dir}/application_server">
-		<isset property="servoy.app_server.dir"/>
+		<not>
+			<isset property="servoy.app_server.dir"/>
+		</not>
 	</condition>	
 	
 	<condition property="servoy.test.property.file" value="${servoy.app_server.dir}/servoy.properties">
-		<isset property="servoy.test.property.file"/>
+		<not>
+			<isset property="servoy.test.property.file"/>
+		</not>
 	</condition>		
 	
 	<taskdef resource="net/sf/antcontrib/antlib.xml">
