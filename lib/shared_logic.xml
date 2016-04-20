@@ -3,14 +3,14 @@
 <!-- Works with Ant 1.7.0 and higher -->
 <project basedir=".">
 
+	<property environment="env"/>
+	<property file="regular_build.properties"/>
+
 	<taskdef resource="net/sf/antcontrib/antlib.xml">
       <classpath>
         <pathelement location="${ANT_CONTRIB_JAR}"/>
       </classpath>
     </taskdef>
-	
-	<property environment="env"/>
-	<property file="regular_build.properties"/>
 	
 	<!--
 	Determine the value for servoy.install.dir, then set several derived properties
