@@ -90,6 +90,7 @@
     </target>
 	
 	<target name="finish">
+		<!-- Move the collected logs to the folder for the specific Jenkins build as artifacts -->
 		<move todir="${current_job.dir}/builds/${env.BUILD_NUMBER}/archive">
             <fileset dir="${build.dir}/logs" includes="*.log" />
         </move>
