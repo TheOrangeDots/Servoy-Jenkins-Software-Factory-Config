@@ -78,7 +78,7 @@
     </target>   
 	
     <target name="collect_logs">
-    	<!-- Move workspace log to  -->
+    	<!-- Move workspace log to build/logs directory -->
         <move file="${workspace.internal}/.metadata/.log" tofile="${build.dir}/logs/workspace.log" failonerror="false"/>
     </target>
 	
@@ -87,6 +87,17 @@
 		<move todir="${current_job.dir}/builds/${env.BUILD_NUMBER}/archive">
             <fileset dir="${build.dir}/logs" includes="*.log" />
         </move>
+		
+		<if>
+			<istrue value="${export.solution_under_testing.as.artifact}"/>
+			<then> <!-- export the solution_under_testing solution as artifact -->
+				<export-solution solutionNames="${solution_under_testing}" workspace="${WORKSPACE}"/>
+				<move todir="${current_job.dir}/builds/${env.BUILD_NUMBER}/archive">
+		            <fileset dir="${test.exports.regular.dir}" includes="${solution_under_testing}.servoy" />
+		        </move>
+			</then>
+		</if>
+		
 		<fail message="Exports failed: please check exporter log files." if="export.failed" />
 		<fail message="Tests failed: please check test reports." if="test.failed" />
 	</target>
