@@ -2,10 +2,6 @@
 
 <!-- Works with Ant 1.7.0 and higher -->
 <project basedir="." default="compress_solutions_on_remote_servoy_server">
-	<!--
-
-	-->
-	
 	<!-- Import .servoy file on remote server -->
 	<target name="compress_solutions_on_remote_servoy_server">
 		<exec executable="node" failonerror="true">
