@@ -16,27 +16,27 @@
 	-->
 	<condition property="servoy.install.dir" value="${env.SERVOY_INSTALL}">
 		<not>
-			<isset property"servoy.install.dir"/>
+			<isset property="servoy.install.dir"/>
 		</not>
 	</condition>
 
 	<!-- This default should be made OS specific-->
 	<condition property="servoy.install.dir" value="c:/Servoy">
 		<not>
-			<isset property"servoy.install.dir"/>
+			<isset property="servoy.install.dir"/>
 		</not>
 	</condition>	
 	
 	<condition property="servoy.developer.dir" value="${servoy.install.dir}/developer">
-		<isset property"servoy.developer.dir"/>
+		<isset property="servoy.developer.dir"/>
 	</condition>	
 	
 	<condition property="servoy.app_server.dir" value="${servoy.install.dir}/application_server">
-		<isset property"servoy.app_server.dir"/>
+		<isset property="servoy.app_server.dir"/>
 	</condition>	
 	
 	<condition property="servoy.test.property.file" value="${servoy.app_server.dir}/servoy.properties">
-		<isset property"servoy.test.property.file"/>
+		<isset property="servoy.test.property.file"/>
 	</condition>		
 	
 	<taskdef resource="net/sf/antcontrib/antlib.xml">
