@@ -90,6 +90,9 @@
     </target>
 	
 	<target name="finish">
+		<move todir="${current_job.dir}/builds/${env.BUILD_NUMBER}/archive">
+            <fileset dir="${build.dir}/logs" includes="*.log" />
+        </move>
 		<fail message="Exports failed: please check exporter log files." if="export.failed" />
 		<fail message="Tests failed: please check test reports." if="test.failed" />
 	</target>
