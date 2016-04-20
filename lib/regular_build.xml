@@ -3,18 +3,11 @@
 <!-- Works with Ant 1.7.0 and higher -->
 <project default="main" basedir=".">
 
-	<property environment="env"/>
-	<property file="regular_build.properties"/>
-	
-	<taskdef resource="net/sf/antcontrib/antlib.xml">
-      <classpath>
-        <pathelement location="${ANT_CONTRIB_JAR}"/>
-      </classpath>
-    </taskdef>
+	<import file="shared_logic.xml"/>
+	<import file="servoy_utils.xml"/>
 	
 	<import file="code_coverage.xml"/>
     <import file="code_analysis.xml"/>
-	<import file="servoy_utils.xml"/>
 	
     <!-- Cleans the workspace preparing for a new build        -->
     <!-- Then                                                  -->

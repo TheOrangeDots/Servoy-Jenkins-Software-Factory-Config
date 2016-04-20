@@ -3,8 +3,6 @@
 <!-- Works with Ant 1.7.0 and higher -->
 <project basedir=".">
 
-    <property file="regular_build.properties"/>
-	
     <!-- this macro is almost identical to the sample export solution target from [developer.dir]/exporter -->
     <macrodef name="export-solution">
         <attribute name="solutionNames"/>

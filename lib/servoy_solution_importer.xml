@@ -15,17 +15,9 @@
 	- servoy.app_server.dir
 	- servoy.test.property.file
 	-->	
-	<property environment="env"/>
-	<property file="regular_build.properties"/>
-	
-	<taskdef resource="net/sf/antcontrib/antlib.xml">
-      <classpath>
-        <pathelement location="${ANT_CONTRIB_JAR}"/>
-      </classpath>
-    </taskdef>
-
+	<import file="shared_logic.xml"/>
 	<import file="servoy_utils.xml"/>
-
+	
 	<target name="main" depends="get_equinox_jar, export_solution_for_import, import_solution"/>
 
 	<!-- Create .servoy file -->
