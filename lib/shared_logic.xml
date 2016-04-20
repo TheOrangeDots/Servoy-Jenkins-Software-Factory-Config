@@ -3,9 +3,15 @@
 <!-- Works with Ant 1.7.0 and higher -->
 <project basedir=".">
 
+	<taskdef resource="net/sf/antcontrib/antlib.xml">
+      <classpath>
+        <pathelement location="${ANT_CONTRIB_JAR}"/>
+      </classpath>
+    </taskdef>
+	
 	<property environment="env"/>
 	<property file="regular_build.properties"/>
-
+	
 	<!--
 	Determine the value for servoy.install.dir, then set several derived properties
 	
@@ -13,42 +19,26 @@
 	Otherwise, set is with the value of env.SERVOY_INSTALL
 	If still not set, default to C:/Servoy
 	
+	Since properties can't be altered once set, the <istrue value="true"/> condition is used
 	-->
 	<condition property="servoy.install.dir" value="${env.SERVOY_INSTALL}">
-		<not>
-			<isset property="servoy.install.dir"/>
-		</not>
+		<istrue value="true"/>
 	</condition>
 
-	<!-- This default should be made OS specific-->
-	<condition property="servoy.install.dir" value="c:/Servoy">
-		<not>
-			<isset property="servoy.install.dir"/>
-		</not>
+	<condition property="servoy.install.dir" value="C:/Servoy"> <!-- This default should be made OS specific-->
+		<istrue value="true"/>
 	</condition>	
 	
 	<condition property="servoy.developer.dir" value="${servoy.install.dir}/developer">
-		<not>
-			<isset property="servoy.developer.dir"/>
-		</not>
+		<istrue value="true"/>
 	</condition>	
 	
 	<condition property="servoy.app_server.dir" value="${servoy.install.dir}/application_server">
-		<not>
-			<isset property="servoy.app_server.dir"/>
-		</not>
+		<istrue value="true"/>
 	</condition>	
 	
 	<condition property="servoy.test.property.file" value="${servoy.app_server.dir}/servoy.properties">
-		<not>
-			<isset property="servoy.test.property.file"/>
-		</not>
+		<istrue value="true"/>
 	</condition>		
-	
-	<taskdef resource="net/sf/antcontrib/antlib.xml">
-      <classpath>
-        <pathelement location="${ANT_CONTRIB_JAR}"/>
-      </classpath>
-    </taskdef>
     
 </project>
