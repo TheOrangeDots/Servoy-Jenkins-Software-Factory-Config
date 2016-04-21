@@ -25,7 +25,7 @@
 	        <fileset dir="${WORKSPACE}/build/upstreamArtifacts" includes="*.servoy" />
 	        <sequential>
 	        	<antcall target="import_dot_servoy_file_on_remote_server">
-	        		<param name="fileName" value="@file"/>
+	        		<param name="fileName" value="${WORKSPACE}/build/upstreamArtifacts/@{file}"/>
 	        	</antcall>
 	        </sequential>
 	    </for>
