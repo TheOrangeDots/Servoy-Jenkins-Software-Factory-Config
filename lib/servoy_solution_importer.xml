@@ -18,19 +18,25 @@
 	<import file="shared_logic.xml"/>
 	<import file="servoy_utils.xml"/>
 	
-	<target name="main" depends="get_equinox_jar, export_solution_for_import, import_solution"/>
+	<target name="main" depends="import_solutions"/>
 
-	<!-- Create .servoy file -->
-	<target name="export_solution_for_import">
-		<export-solution solutionNames="${import_solution_name}" workspace="${WORKSPACE}"/>
+	<target name="import_solutions">
+		<for param="file">
+	        <fileset dir="${current_job.dir}/builds/${env.BUILD_NUMBER}/archive" includes="*.servoy" />
+	        <sequential>
+	        	<antcall target="import_dot_servoy_file_on_remote_server">
+	        		<param name="fileName" value="@file"/>
+	        	</antcall>
+	        </sequential>
+	    </for>
 	</target>
 	
 	<!-- Import .servoy file on remote server -->
-	<target name="import_solution" depends="export_solution_for_import">
+	<target name="import_dot_servoy_file_on_remote_server">
 		<exec executable="node" failonerror="true">
 			<arg value="servoySolutionImporter.js"/>
 			<arg value="${servoy_app_server_url}"/>
-			<arg value="${test.exports.regular.dir}/${import_solution_name}"/>
+			<arg value="${fileName}"/>
 			<arg value="${admin_page_user_name}"/>
 			<arg value="${admin_page_password}"/>
 		</exec>
