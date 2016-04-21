@@ -22,7 +22,7 @@
 
 	<target name="import_solutions">
 		<for param="file">
-	        <fileset dir="${current_job.dir}/builds/${env.BUILD_NUMBER}/archive" includes="*.servoy" />
+	        <fileset dir="${WORKSPACE}/build/upstreamArtifacts" includes="*.servoy" />
 	        <sequential>
 	        	<antcall target="import_dot_servoy_file_on_remote_server">
 	        		<param name="fileName" value="@file"/>
